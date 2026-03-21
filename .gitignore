@@ -1,0 +1,22 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+.env
+.DS_Store
+
+# Temporary and IDE files
+.claudecode
+.cursorrules
+*.spec
+LAUNCH_STRATEGY.md
+debug.log
+test.*
+test_*
+logo_preview.png
