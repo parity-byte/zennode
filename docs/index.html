@@ -3,447 +3,807 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZenNode | The Glass-Box Study Pipeline</title>
+    <title>ZenNode | Glass-Box Architecture</title>
     
-    <!-- Anti-generic typography choice: Output Sans and JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
         /* 
-         * Impeccable Aesthetic Base 
-         * Tone: Brutalist Editor / Editorial Premium
-         * No slop. No glassmorphism. Absolute precision.
+         * Impeccable Style System
+         * Stark, single-accent, unadulterated contrast.
          */
         
         :root {
-            /* Palette: Stark Contrast Space */
-            --bg: oklch(14% 0 0); /* Ultra dark gray, true to reality */
-            --bg-elevated: oklch(18% 0 0);
-            --fg: oklch(98% 0 0);
-            --fg-muted: oklch(75% 0 0);
-            --fg-dim: oklch(50% 0 0);
-            --accent: oklch(65% 0.25 30); /* Electric Orange/Red */
+            /* Pure base */
+            --bg-base: #000000;
+            --bg-surface: #0a0a0a;
+            --bg-surface-hover: #121212;
+            
+            /* Clean Lines */
+            --border-faint: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.15);
+            --border-bright: rgba(255, 255, 255, 0.25);
             
             /* Typography */
-            --font-display: 'Outfit', -apple-system, sans-serif;
-            --font-mono: 'JetBrains Mono', monospace;
+            --text-strong: #ffffff;
+            --text-base: #a1a1aa;     /* zinc-400 */
+            --text-muted: #71717a;    /* zinc-500 */
             
-            /* Fluid Spacing */
-            --space-3xs: clamp(0.25rem, 0.23rem + 0.11vw, 0.31rem);
-            --space-2xs: clamp(0.50rem, 0.46rem + 0.22vw, 0.63rem);
-            --space-xs: clamp(0.75rem, 0.68rem + 0.33vw, 0.94rem);
-            --space-s: clamp(1.00rem, 0.91rem + 0.43vw, 1.25rem);
-            --space-m: clamp(1.50rem, 1.36rem + 0.65vw, 1.88rem);
-            --space-l: clamp(2.00rem, 1.83rem + 0.87vw, 2.50rem);
-            --space-xl: clamp(3.00rem, 2.74rem + 1.30vw, 3.75rem);
-            --space-2xl: clamp(4.00rem, 3.65rem + 1.74vw, 5.00rem);
-            --space-3xl: clamp(6.00rem, 5.48rem + 2.61vw, 7.50rem);
-
-            /* Ease */
-            --ease-squish: cubic-bezier(0.16, 1, 0.3, 1);
+            /* The Single Accent */
+            --accent: #FF5A1F;
+            --accent-glow: rgba(255, 90, 31, 0.4);
+            
+            /* Fonts */
+            --sans: 'Inter', system-ui, sans-serif;
+            --mono: 'JetBrains Mono', ui-monospace, monospace;
+            
+            /* Spacing */
+            --max-w: 1200px;
         }
 
-        * {
+        *, *::before, *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
 
         body {
-            background-color: var(--bg);
-            color: var(--fg);
-            font-family: var(--font-display);
-            font-size: clamp(1rem, 0.91rem + 0.43vw, 1.25rem);
-            line-height: 1.5;
+            background-color: var(--bg-base);
+            color: var(--text-base);
+            font-family: var(--sans);
+            line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
-            selection: {
-                background: var(--accent);
-                color: var(--bg);
-            }
+            background-image: none; 
         }
 
         ::selection {
-            background: var(--accent);
-            color: var(--bg);
+            background-color: var(--accent);
+            color: #000;
         }
 
-        /* 
-         * Layout Primitives
-         */
+        /* Essential Layout */
         .container {
             width: 100%;
-            max-width: 1200px;
+            max-width: var(--max-w);
             margin: 0 auto;
-            padding: 0 var(--space-m);
+            padding: 0 1.5rem;
         }
 
-        /* 
-         * Typography Overlap & Fluid Scaling
-         */
-        h1, h2, h3 {
-            font-weight: 900;
-            line-height: 1.05;
-            text-wrap: balance;
-            letter-spacing: -0.02em;
+        .section {
+            padding: 7rem 0;
+            border-bottom: 1px solid var(--border-faint);
         }
 
-        .headline {
-            font-size: clamp(4rem, 1.39rem + 13.04vw, 11.5rem);
-            margin-bottom: var(--space-m);
-            text-transform: uppercase;
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
         }
 
-        .sub-headline {
-            font-size: clamp(1.5rem, 1.15rem + 1.74vw, 2.5rem);
-            font-weight: 300;
-            color: var(--fg-muted);
-            max-width: 32ch;
-            margin-bottom: var(--space-2xl);
-            line-height: 1.3;
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
         }
 
-        .section-title {
-            font-size: clamp(2.5rem, 1.98rem + 2.61vw, 4rem);
-            margin-bottom: var(--space-l);
-            color: var(--fg);
+        /* Typography */
+        h1, h2, h3, h4 {
+            color: var(--text-strong);
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+        }
+
+        .text-hero {
+            font-size: clamp(3rem, 6vw, 5.5rem);
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.04em;
+            font-weight: 700;
+        }
+
+        .text-section {
+            font-size: clamp(2rem, 4vw, 3rem);
+            margin-bottom: 2rem;
+            letter-spacing: -0.03em;
+        }
+
+        .text-card {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
         }
 
         p {
-            margin-bottom: var(--space-m);
+            margin-bottom: 1.5rem;
+            font-size: 1.125rem;
             max-width: 65ch;
-            color: var(--fg-muted);
         }
 
         .mono {
-            font-family: var(--font-mono);
+            font-family: var(--mono);
             font-size: 0.85em;
             letter-spacing: -0.01em;
         }
 
-        /* 
-         * Components
-         */
-        .nav {
-            padding: var(--space-m) 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--bg-elevated);
-        }
-
-        .logo {
-            font-weight: 900;
-            font-size: 1.5rem;
-            letter-spacing: -0.05em;
-            text-decoration: none;
-            color: var(--fg);
-            display: flex;
-            align-items: center;
-            gap: var(--space-3xs);
-        }
-        
-        .logo span {
+        .text-accent {
             color: var(--accent);
         }
 
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            padding: var(--space-3xs) var(--space-2xs);
-            background: color-mix(in oklch, var(--accent) 15%, transparent);
-            color: var(--accent);
-            border: 1px solid color-mix(in oklch, var(--accent) 30%, transparent);
-            text-transform: uppercase;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            margin-bottom: var(--space-m);
-            border-radius: 2px;
-        }
-
-        .terminal-block {
-            background: var(--bg-elevated);
-            border: 1px solid color-mix(in oklch, var(--fg) 10%, transparent);
-            padding: var(--space-m);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            overflow-x: auto;
-            position: relative;
-            margin-bottom: var(--space-2xl);
-            border-radius: 2px;
-            box-shadow: 10px 10px 0px 0px var(--bg), 10px 10px 0px 1px color-mix(in oklch, var(--fg) 10%, transparent);
-            transition: transform 0.4s var(--ease-squish), box-shadow 0.4s var(--ease-squish);
-            width: fit-content;
-        }
-
-        .terminal-block:hover {
-            transform: translate(2px, 2px);
-            box-shadow: 8px 8px 0px 0px var(--bg), 8px 8px 0px 1px color-mix(in oklch, var(--fg) 10%, transparent);
-        }
-
-        .terminal-prompt {
-            color: var(--accent);
-            margin-right: var(--space-xs);
-        }
-
-        .terminal-code {
-            color: var(--fg);
-            margin-right: var(--space-xl);
-            white-space: nowrap;
-        }
-
+        /* Interactive Elements */
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: var(--space-s) var(--space-m);
-            font-weight: 700;
+            padding: 0.875rem 1.5rem;
+            font-weight: 500;
+            font-size: 0.95rem;
             text-decoration: none;
-            text-transform: uppercase;
-            letter-spacing: 0.02em;
-            transition: all 0.3s var(--ease-squish);
-            border-radius: 2px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
             cursor: pointer;
-            border: none;
+            gap: 0.5rem;
+            border: 1px solid transparent;
         }
 
         .btn-primary {
-            background: var(--fg);
-            color: var(--bg);
-            border: 1px solid var(--fg);
+            background: var(--text-strong);
+            color: #000;
         }
 
         .btn-primary:hover {
+            background: #e4e4e7;
+        }
+
+        .btn-outline {
             background: transparent;
-            color: var(--fg);
+            color: var(--text-strong);
+            border: 1px solid var(--border-hover);
         }
 
-        .btn-secondary {
-            background: transparent;
-            color: var(--fg);
-            border: 1px solid color-mix(in oklch, var(--fg) 20%, transparent);
+        .btn-outline:hover {
+            background: var(--bg-surface-hover);
+            border-color: var(--border-bright);
         }
 
-        .btn-secondary:hover {
-            border-color: var(--fg);
-        }
-
-        /* 
-         * Editorial Grid Section 
-         */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1px;
-            background: color-mix(in oklch, var(--fg) 15%, transparent);
-            border: 1px solid color-mix(in oklch, var(--fg) 15%, transparent);
-            margin-bottom: var(--space-3xl);
-        }
-
-        .feature-card {
-            background: var(--bg);
-            padding: var(--space-xl) var(--space-m);
+        /* Polished Continuous Border Animation for Cards */
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-faint);
+            border-radius: 8px;
+            padding: 2.5rem;
             position: relative;
-        }
-
-        /* Number marker */
-        .feature-card::before {
-            content: attr(data-index);
-            position: absolute;
-            top: var(--space-m);
-            right: var(--space-m);
-            font-family: var(--font-mono);
-            font-size: 0.8rem;
-            color: var(--fg-dim);
-        }
-
-        .feature-title {
-            font-size: clamp(1.25rem, 1.16rem + 0.43vw, 1.5rem);
-            margin-bottom: var(--space-s);
-            color: var(--fg);
-        }
-
-        /* 
-         * Structural 
-         */
-        .section {
-            padding: var(--space-3xl) 0;
-        }
-
-        .hero {
-            min-height: 80vh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
+            transition: border-color 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .card:hover {
+            border-color: var(--border-bright);
+            transform: translateY(-2px);
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            padding: 1px;
+            background: conic-gradient(
+                from var(--border-angle, 0deg),
+                transparent 70%,
+                var(--accent) 100%
+            );
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            -webkit-mask-composite: xor;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .card:hover::after {
+            opacity: 1;
+            animation: border-spin 3s linear infinite;
+        }
+
+        @property --border-angle {
+            syntax: '<angle>';
+            inherits: true;
+            initial-value: 0deg;
+        }
+
+        @keyframes border-spin {
+            from { --border-angle: 0deg; }
+            to { --border-angle: 360deg; }
+        }
+
+        .card-icon {
+            display: inline-flex;
+            align-items: center;
             justify-content: center;
+            width: 48px;
+            height: 48px;
+            background: var(--bg-base);
+            border: 1px solid var(--border-faint);
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            color: var(--text-strong);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover .card-icon {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 15px var(--accent-glow);
         }
 
-        .btn-group {
+        /* Terminal/Code Display */
+        .code-block {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-faint);
+            border-radius: 8px;
+            padding: 1.5rem;
+            font-family: var(--mono);
+            color: var(--text-base);
+            position: relative;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+        .code-block::before {
+            content: "TERMINAL";
+            display: block;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            letter-spacing: 0.05em;
+        }
+        .prompt { color: var(--text-muted); margin-right: 0.5rem; user-select: none; }
+        .command { color: var(--text-strong); }
+
+        /* Quick Install Bar */
+        .quick-install {
             display: flex;
-            gap: var(--space-s);
-            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            background: transparent;
+            border: 1px solid var(--border-faint);
+            border-radius: 6px;
+            padding: 0.5rem 0.75rem;
+            font-family: var(--mono);
+            color: var(--text-strong);
+            margin-top: 2.5rem;
+            margin-bottom: 2rem;
+            transition: border-color 0.2s;
+            position: relative;
+            font-size: 0.85rem;
+            max-width: 500px;
+        }
+        .quick-install:hover {
+            border-color: var(--border-bright);
+        }
+        .quick-install .command-container {
+            display: flex;
+            overflow: hidden;
+            white-space: nowrap;
+            margin-right: 1rem;
+            flex-grow: 1;
+        }
+        .quick-install .command {
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .quick-install .command::-webkit-scrollbar { 
+            display: none;
+        }
+        .quick-install .copy-btn {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-faint);
+            color: var(--text-base);
+            cursor: pointer;
+            padding: 0.35rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+            outline: none;
+        }
+        .quick-install .copy-btn:hover {
+            background: var(--border-hover);
+            color: var(--text-strong);
+            border-color: var(--border-bright);
         }
 
-        footer {
-            border-top: 1px solid var(--bg-elevated);
-            padding: var(--space-l) 0;
+        /* Badge */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background: transparent;
+            color: var(--text-strong);
+            border: 1px solid var(--border-faint);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            box-shadow: 0 0 8px var(--accent);
+            animation: pulse-dot 2.5s infinite;
+        }
+        @keyframes pulse-dot {
+            0% { box-shadow: 0 0 0 0 var(--accent-glow); }
+            70% { box-shadow: 0 0 0 6px transparent; }
+            100% { box-shadow: 0 0 0 0 transparent; }
+        }
+
+        /* Nav */
+        nav {
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-faint);
+            position: sticky;
+            top: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(12px);
+            z-index: 50;
+        }
+        
+        nav .container {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.85rem;
-            color: var(--fg-dim);
         }
         
-        .footer-link {
-            color: var(--fg-muted);
+        .logo {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-strong);
             text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: -0.02em;
         }
 
-        .footer-link:hover {
-            color: var(--fg);
-            text-decoration: underline;
-            text-decoration-thickness: 1px;
-            text-underline-offset: 4px;
+        /* Narrative Element */
+        .story-container {
+            border-left: 1px solid var(--border-faint);
+            padding-left: 2.5rem;
+            position: relative;
+            margin-top: 3rem;
+        }
+        .story-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: -1px;
+            width: 2px;
+            background: linear-gradient(180deg, var(--accent) 0%, transparent 100%);
+            box-shadow: 0 0 8px var(--accent-glow);
         }
 
-        /* 
-         * Animations (Staggered Load)
-         */
-        .reveal {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.8s var(--ease-squish), transform 0.8s var(--ease-squish);
+        /* Custom System Architecture SVG */
+        .arch-wrapper {
+            width: 100%;
+            border-radius: 8px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-faint);
+            aspect-ratio: 16/11;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
+        /* Subtle grid background for the architecture wrapper */
+        .arch-wrapper::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: 
+                linear-gradient(var(--border-faint) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border-faint) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+        .arch-wrapper::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to bottom, transparent, rgba(255, 90, 31, 0.08) 50%, transparent);
+            animation: scanline 8s infinite linear;
+            pointer-events: none;
+            z-index: 1;
         }
 
-        .delay-1 { transition-delay: 0.1s; }
-        .delay-2 { transition-delay: 0.2s; }
-        .delay-3 { transition-delay: 0.3s; }
+        .arch-svg {
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+        }
 
-        @media (max-width: 768px) {
-            .terminal-block {
-                width: 100%;
-            }
+        .sys-line {
+            fill: none;
+            stroke: var(--border-hover);
+            stroke-width: 1.5;
+            stroke-linejoin: round;
+        }
+
+        .sys-flowing-packet {
+            fill: var(--accent);
+            filter: drop-shadow(0 0 6px var(--accent));
+        }
+
+        /* HTML Nodes overlayed inside SVG foreignObject */
+        .sys-html-node {
+            background: var(--bg-base);
+            border: 1px solid var(--border-hover);
+            border-radius: 6px;
+            padding: 0.75rem 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .sys-html-node:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 90, 31, 0.15);
+        }
+        .sys-html-node.primary {
+            border-color: var(--accent);
+            background: rgba(255, 90, 31, 0.03);
+        }
+        .node-icon-wrapper {
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+        .sys-html-node:hover .node-icon-wrapper,
+        .sys-html-node.primary .node-icon-wrapper {
+            color: var(--accent);
+        }
+        .node-text-wrapper {
+            display: flex;
+            flex-direction: column;
+            text-align: left;
+        }
+        .node-title {
+            color: var(--text-strong);
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .node-desc {
+            color: var(--text-muted);
+            font-family: var(--sans);
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        /* Entrance Animations */
+        .fade-in { animation: fadeIn 0.8s ease forwards; opacity: 0; }
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr; gap: 3rem; }
+            .hero .grid-2 { display: flex; flex-direction: column-reverse; }
+            .arch-wrapper { max-width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <nav class="nav">
-        <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-            <a href="#" class="logo">ZEN<span>NODE</span></a>
-            <a href="https://github.com/parity-byte/zennode" class="btn btn-secondary mono" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">[ View Source ]</a>
+    <nav>
+        <div class="container">
+            <a href="#" class="logo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                ZenNode
+            </a>
+            <a href="https://github.com/parity-byte/zennode" target="_blank" class="btn btn-outline" style="padding: 0.4rem 1rem; border-color: var(--border-faint);">OSS v1.0.0</a>
         </div>
     </nav>
 
     <main>
-        <section class="section hero container">
-            <div class="reveal">
-                <div class="badge mono">v1.0.0 — Open Source Release</div>
-            </div>
-            
-            <h1 class="headline reveal delay-1">Glass-Box<br>Pipeline.</h1>
-            
-            <p class="sub-headline reveal delay-2">
-                Enterprise-grade AI study environment. Turn raw lectures and chaotic thoughts into highly structured, un-overwhelming mastery sheets.
-            </p>
+        <!-- Hero Section -->
+        <section class="section hero" style="min-height: 80vh; display: flex; align-items: center; padding-top: 4rem;">
+            <div class="container grid-2">
+                
+                <div class="hero-content fade-in">
+                    <div class="badge mono">
+                        <div class="badge-dot"></div> Local First
+                    </div>
+                    <h1 class="text-hero">
+                        Structure <br><span style="color: var(--text-muted);">The Chaos.</span>
+                    </h1>
+                    <p style="font-size: 1.25rem;">
+                        A rigorous LangGraph pipeline for developers. It ingests your raw, unstructured audio dumps and synthesizes them into strict Markdown mental-maps. 
+                        Stop passively watching tutorials. Learn by externalizing.
+                    </p>
 
-            <div class="reveal delay-3">
-                <div class="terminal-block mono">
-                    <div>
-                        <span class="terminal-prompt">$</span>
-                        <span class="terminal-code">uv run zennode setup</span>
+                    <div class="quick-install">
+                        <div class="command-container">
+                            <span class="prompt">$</span>
+                            <span class="command" id="install-command">git clone https://github.com/parity-byte/zennode && cd zennode && uv sync</span>
+                        </div>
+                        <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('install-command').innerText); this.innerHTML='<svg width=\'14\' height=\'14\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'var(--accent)\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><polyline points=\'20 6 9 17 4 12\'></polyline></svg>'; setTimeout(() => this.innerHTML='<svg width=\'14\' height=\'14\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'><rect x=\'9\' y=\'9\' width=\'13\' height=\'13\' rx=\'2\' ry=\'2\'></rect><path d=\'M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\'></path></svg>', 2000);" aria-label="Copy installation command">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        </button>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <a href="https://github.com/parity-byte/zennode" target="_blank" class="btn btn-primary" style="padding: 0.75rem 1.5rem;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                            Star on GitHub
+                        </a>
+                        <a href="https://www.linkedin.com/in/parth-agrawal/" target="_blank" class="btn btn-outline" style="padding: 0.75rem 1.5rem; display: inline-flex; align-items: center; gap: 0.5rem;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                            Connect with me
+                        </a>
                     </div>
                 </div>
 
-                <div class="btn-group">
-                    <a href="#philosophy" class="btn btn-primary">The Philosophy</a>
-                    <a href="https://github.com/parity-byte/zennode" class="btn btn-secondary">Read the Docs</a>
+                <!-- Deep System Architecture Diagram -->
+                <div class="arch-wrapper fade-in delay-1" id="architecture">
+                    <svg viewBox="0 0 900 600" class="arch-svg" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Paths connecting the nodes (center to center) -->
+                        <path id="pathInput" d="M 100 300 L 320 300" class="sys-line" />
+                        <path id="pathOrchestrator" d="M 320 300 L 520 300" class="sys-line" />
+                        
+                        <!-- Branches up to LLM -->
+                        <path id="pathLLM" d="M 520 300 L 520 200 Q 520 150 570 150 L 690 150" class="sys-line" />
+                        <path id="pathLLMRet" d="M 690 150 L 780 150 Q 820 150 820 190 L 820 260 Q 820 300 780 300 L 520 300" class="sys-line" />
+                        
+                        <!-- Branches down to Promptfoo -->
+                        <path id="pathVal" d="M 520 300 L 520 400 Q 520 450 570 450 L 690 450" class="sys-line" />
+                        <path id="pathValRet" d="M 690 450 L 780 450 Q 820 450 820 410 L 820 340 Q 820 300 780 300 L 520 300" class="sys-line" />
+
+                        <!-- Path to Output Node -->
+                        <path id="pathOut" d="M 520 300 L 520 400 Q 520 450 470 450 L 200 450" class="sys-line" />
+
+                        <!-- Animated Data Packets Flowing through the Architecture -->
+                        <circle r="3" class="sys-flowing-packet"><animateMotion dur="2.5s" repeatCount="indefinite"><mpath href="#pathInput"/></animateMotion></circle>
+                        <circle r="3" class="sys-flowing-packet"><animateMotion dur="2s" begin="0.8s" repeatCount="indefinite"><mpath href="#pathOrchestrator"/></animateMotion></circle>
+                        <circle r="3" class="sys-flowing-packet"><animateMotion dur="3s" begin="1s" repeatCount="indefinite"><mpath href="#pathLLM"/></animateMotion></circle>
+                        <circle r="3" class="sys-flowing-packet"><animateMotion dur="3.5s" begin="2s" repeatCount="indefinite"><mpath href="#pathLLMRet"/></animateMotion></circle>
+                        <circle r="3" class="sys-flowing-packet"><animateMotion dur="3s" begin="1.2s" repeatCount="indefinite"><mpath href="#pathVal"/></animateMotion></circle>
+                        <circle r="3" class="sys-flowing-packet"><animateMotion dur="3.5s" begin="2.5s" repeatCount="indefinite"><mpath href="#pathValRet"/></animateMotion></circle>
+                        <circle r="3" class="sys-flowing-packet"><animateMotion dur="4s" begin="1.5s" repeatCount="indefinite"><mpath href="#pathOut"/></animateMotion></circle>
+
+                        <!-- NODES (HTML inside foreignObject for dynamic text wrapping) -->
+                        
+                        <!-- Input (Audio.wav) at 100, 300 -->
+                        <foreignObject x="-20" y="260" width="240" height="80">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                                <div class="sys-html-node">
+                                    <div class="node-icon-wrapper">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+                                    </div>
+                                    <div class="node-text-wrapper"><span class="node-title">Audio.wav</span><span class="node-desc">Unstructured Input</span></div>
+                                </div>
+                            </div>
+                        </foreignObject>
+
+                        <!-- Whisper at 320, 300 -->
+                        <foreignObject x="200" y="260" width="240" height="80">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                                <div class="sys-html-node">
+                                    <div class="node-icon-wrapper">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12h3l3 -9l5 18l3 -9h6"></path></svg>
+                                    </div>
+                                    <div class="node-text-wrapper"><span class="node-title">Whisper()</span><span class="node-desc">Groq Transcription</span></div>
+                                </div>
+                            </div>
+                        </foreignObject>
+
+                        <!-- LangGraph at 520, 300 -->
+                        <foreignObject x="400" y="260" width="240" height="80">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                                <div class="sys-html-node primary">
+                                    <div class="node-icon-wrapper">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                                    </div>
+                                    <div class="node-text-wrapper"><span class="node-title">StateGraph</span><span class="node-desc">LangGraph Mesh</span></div>
+                                </div>
+                            </div>
+                        </foreignObject>
+
+                        <!-- Gemini at 690, 150 -->
+                        <foreignObject x="570" y="110" width="240" height="80">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                                <div class="sys-html-node">
+                                    <div class="node-icon-wrapper">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                                    </div>
+                                    <div class="node-text-wrapper"><span class="node-title">Gemini 2.0</span><span class="node-desc">Persona Model</span></div>
+                                </div>
+                            </div>
+                        </foreignObject>
+
+                        <!-- Promptfoo at 690, 450 -->
+                        <foreignObject x="570" y="410" width="240" height="80">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                                <div class="sys-html-node">
+                                    <div class="node-icon-wrapper">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                                    </div>
+                                    <div class="node-text-wrapper"><span class="node-title">Promptfoo</span><span class="node-desc">Red-Team Firewall</span></div>
+                                </div>
+                            </div>
+                        </foreignObject>
+
+                        <!-- Mastery.md at 200, 450 -->
+                        <foreignObject x="80" y="410" width="240" height="80">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+                                <div class="sys-html-node">
+                                    <div class="node-icon-wrapper">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                    </div>
+                                    <div class="node-text-wrapper"><span class="node-title">Mastery.md</span><span class="node-desc">Obsidian Vault</span></div>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </svg>
                 </div>
             </div>
         </section>
 
-        <section id="philosophy" class="section container">
-            <h2 class="section-title reveal">Why Glass-Box?</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-2xl);">
-                <div class="reveal delay-1">
-                    <h3 class="feature-title">The "Black Box" Problem</h3>
-                    <p>Current generation AI tools treat learners like endpoints. You put a prompt in, and an opaque "Black Box" spits an answer out. If the AI hallucinates, you learn wrong. If it's too brief, you miss nuance. You are left afraid to trust the code, unable to defend it in an interview, and overwhelmed.</p>
-                </div>
-                <div class="reveal delay-2">
-                    <h3 class="feature-title">The "Glass Box" Solution</h3>
-                    <p>ZenNode explicitly breaks the AI workflow apart. Instead of hiding the work, it exposes the exact engineering logic. It teaches you what you <strong>MUST</strong> understand deeply vs what you can safely ignore as a black box. Perfect for ADHD minds that need high-signal architecture over unstructured walls of text.</p>
-                </div>
-            </div>
-        </section>
-
-        <section class="section container">
-            <h2 class="section-title reveal">Core Capabilities.</h2>
-            
-            <div class="features-grid reveal delay-1">
-                <div class="feature-card" data-index="01">
-                    <h3 class="feature-title">Agentic Workflow Chains</h3>
-                    <p>Powered by LangGraph, routing queries through discrete modules: Ingestion → Chunking → Embed → Generate over iterative loops.</p>
+        <!-- The Origin Story & Problem Statement -->
+        <section class="section fade-in delay-2">
+            <div class="container grid-2">
+                <div>
+                    <h2 class="text-section">Talking to Learn.</h2>
+                    <div class="story-container">
+                        <p style="font-style: italic; color: var(--text-base);">
+                            "I needed a way to talk about what I just learned."
+                        </p>
+                        <p>
+                            Like many developers, I found the traditional "tutorial loop" broken. Watching videos creates a false sense of competence; staring at a blank editor creates task paralysis. Often, the only way to break the deadlock and compile those abstract concepts was to talk to myself—or rubber-duck to thin air.
+                        </p>
+                        <p>
+                            One thing led to another, and I built a pipeline. ZenNode was created to ingest chaotic, rambling audio dumps and force them into strict, actionable mental maps. It’s the computational execution of the Feynman Technique.
+                        </p>
+                    </div>
                 </div>
                 
-                <div class="feature-card" data-index="02">
-                    <h3 class="feature-title">Mastery Sheet Generation</h3>
-                    <p>Outputs brutally clean, highly aggressive markdown matrices, C4 architecture diagrams, and "Junior Pitfalls" summaries.</p>
-                </div>
-                
-                <div class="feature-card" data-index="03">
-                    <h3 class="feature-title">Promptfoo Red-Teaming</h3>
-                    <p>Every system prompt in ZenNode is hardened through adversarial LLM testing to ensure exact compliance with cognitive learning constraints.</p>
-                </div>
-
-                <div class="feature-card" data-index="04">
-                    <h3 class="feature-title">AuDHD Optimized Profiles</h3>
-                    <p>Specialized system prompt architectures that cater specifically to non-linear neurodivergent thinking with zero motivational fluff.</p>
+                <div class="card" style="height: 100%; justify-content: center;">
+                    <div class="card-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+                    </div>
+                    <h3 class="text-card">Rubber Duck Debugging 2.0</h3>
+                    <p style="margin-bottom: 0;">
+                        Stop stalling and overcome the fear of diving into complex code. ZenNode acts as an active listener that processes your fragmented thoughts and voice dumps, converting them into factually accurate, structured Markdown. It's the computational execution of the Feynman Technique—helping you build confidence by explaining what you just learned.
+                    </p>
                 </div>
             </div>
         </section>
+
+        <!-- Modularity & Open Source -->
+        <section class="section fade-in delay-3" style="background-color: var(--bg-surface);">
+            <div class="container text-center" style="max-width: 800px; margin: 0 auto; text-align: center;">
+                <h2 class="text-section">Built to be Hacked (OSS).</h2>
+                <p style="margin: 0 auto 2.5rem; text-align: center;">
+                    ZenNode isn't a walled garden. It's an open-source, strongly-typed Python pipeline meant to be modified. Built on <strong>LangGraph</strong>, the architecture is entirely component-based. Swap Groq for your local Whisper instance, re-route nodes to an on-premise LLaMa, or change the checkpointer from SQLite to Postgres.
+                </p>
+
+                <div class="code-block" style="text-align: left;">
+                    <div><span class="prompt">$</span><span class="command" style="color: var(--text-muted);"># The backend engine is yours to own.</span></div>
+                    <div><span class="prompt">$</span><span class="command">cp .env.example .env</span></div>
+                    <div><span class="prompt">$</span><span class="command">uv run zennode-app</span></div>
+                </div>
+                
+                <a href="https://github.com/parity-byte/zennode" target="_blank" class="btn btn-outline" style="min-width: 200px; padding: 0.8rem 2rem;">
+                    Fork the Pipeline
+                </a>
+            </div>
+        </section>
+
+        <!-- Modular Architecture Breakdown -->
+        <section class="section section-no-border">
+            <div class="container">
+                <h2 class="text-section text-center" style="text-align: center; margin-bottom: 4rem;">Pipeline Primitives</h2>
+                
+                <div class="grid-3">
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                        </div>
+                        <h3 class="text-card">Local State Persistence</h3>
+                        <p class="mono" style="margin-bottom: 1rem; color: var(--text-muted);">SqliteSaver Checkpointer</p>
+                        <p style="font-size: 0.95rem; margin-bottom: 0;">Conversational states are discrete checkpoints. The execution graph can pause, handle faults, and resume without ever dropping context.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                        </div>
+                        <h3 class="text-card">Adversarial Defense</h3>
+                        <p class="mono" style="margin-bottom: 1rem; color: var(--text-muted);">Promptfoo Validation</p>
+                        <p style="font-size: 0.95rem; margin-bottom: 0;">System prompts are mathematically scored against Red-Team jailbreaks. The synthesis engine strictly refuses to output motivational fluff.</p>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        </div>
+                        <h3 class="text-card">Obsidian Injection</h3>
+                        <p class="mono" style="margin-bottom: 1rem; color: var(--text-muted);">PKM formatted sync</p>
+                        <p style="font-size: 0.95rem; margin-bottom: 0;">Outputs are pure Markdown injected directly into local vaults, complete with standard tags and formatting ensuring immediate usability.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Core Painpoints Backstory -->
+        <section class="section fade-in" style="border-top: 1px solid var(--border-faint); background-color: var(--bg-surface);">
+            <div class="container" style="max-width: 800px;">
+                <h2 class="text-section" style="text-align: center; margin-bottom: 2rem;">Why ZenNode was built</h2>
+                <p style="font-size: 1.1rem; color: var(--text-base); text-align: center; margin-bottom: 2.5rem; font-style: italic;">
+                    "I wanted to set up a place where I can dump screenshots, texts, and direct voice notes, rather than annotating everything perfectly."
+                </p>
+                <p style="margin-bottom: 1.5rem;">
+                    When learning SOTA tools—like LangGraph, MCP, or complex GenAI architectures—the biggest hurdle isn't finding information. It's the paralysis of having a gazillion things to do, leading to an irrational fear of touching the codebase.
+                </p>
+                <p style="margin-bottom: 1.5rem;">
+                    ZenNode was built to solve three core problems:
+                </p>
+                <ul style="color: var(--text-muted); padding-left: 1.5rem; margin-bottom: 2rem; line-height: 1.6;">
+                    <li><strong>Building coding confidence:</strong> Eliminating the fear of complex codebases by breaking them down visually and textually.</li>
+                    <li><strong>Retaining knowledge:</strong> Processing scattered video tutorials, AI chats, and raw notes into cohesive mental maps.</li>
+                    <li><strong>Executing momentum:</strong> Pushing through task paralysis by minimizing setup friction.</li>
+                </ul>
+                <p style="margin-bottom: 1.5rem;">
+                    The initial thought was just an infinite document to endlessly paste learnings. But passive dumping doesn't equal learning. The real cognitive unlock happens when you teach someone else—an active execution of the <strong>Feynman Technique</strong>. 
+                </p>
+                <p>
+                    Instead of starting a YouTube channel just to rubber-duck my architectural thoughts, ZenNode was built to be that listener. It takes minimal effort to dump your context and run the pipeline, returning a factually accurate markdown vault (checked against the latest docs) that helps form a rock-solid mental map.
+                </p>
+            </div>
+        </section>
+
     </main>
 
-    <footer class="container">
-        <div>&copy; 2026 ZenNode — The Glass-Box Study Pipeline.</div>
-        <div>
-            Built by <a href="https://github.com/parity-byte" class="footer-link">Parth Agrawal</a>
+    <footer class="section" style="padding: 3rem 0; background-color: var(--bg-surface); border-top: 1px solid var(--border-faint);">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; color: var(--text-muted);">
+            <div class="mono" style="font-size: 0.8rem;">&copy; 2026 ZenNode — Your Personalized AI Cognitive Sidekick.</div>
+            <div>
+                Architected by <a href="https://www.linkedin.com/in/parth-agrawal/" target="_blank" style="color: var(--text-base); text-decoration: none;">Parth Agrawal</a>
+            </div>
         </div>
     </footer>
 
-    <!-- Staggered Layout Reveal Logic -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('active');
-                    }
-                });
-            }, {
-                root: null,
-                threshold: 0.1,
-                rootMargin: "0px"
-            });
-
-            document.querySelectorAll('.reveal').forEach((el) => {
-                observer.observe(el);
-            });
-            
-            // Trigger immediately for elements above the fold
-            setTimeout(() => {
-                document.querySelectorAll('.hero .reveal').forEach((el) => {
-                    el.classList.add('active');
-                });
-            }, 100);
-        });
-    </script>
 </body>
 </html>
