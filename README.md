@@ -111,8 +111,12 @@ We take code quality seriously. ZenNode is built for developers who want to tink
 ---
 
 ## 🤝 Contributing
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details on how to submit pull requests, report issues, and improve ZenNode.
 
-We’re all about building accessible, empowering tech for neurodivergent folks. Whether you're fixing a bug, adding a new Persona template, or writing docs—we want you! Read our [`CONTRIBUTING.md`](CONTRIBUTING.md) to join the fun.
+## 🎉 Acknowledgments
+We would like to express our gratitude to the open-source community.
+- **Creator & Maintainer:** [Parth Agrawal](https://www.linkedin.com/in/parth-ag)
+- **Inspiration:** Built to eliminate CLI friction and provide true "Glass-Box" learning.
 
 ## 🌟 Star History
 
