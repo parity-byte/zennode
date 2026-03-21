@@ -1,43 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZenNode | The Glass-Box Study Pipeline</title>
-    <meta name="description" content="An enterprise-grade, open-source AI study environment tailored for neurodivergent learners. Convert audio lectures and unstructured notes into profound mastery.">
+    
+    <!-- Anti-generic typography choice: Output Sans and JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
     <style>
+        /* 
+         * Impeccable Aesthetic Base 
+         * Tone: Brutalist Editor / Editorial Premium
+         * No slop. No glassmorphism. Absolute precision.
+         */
+        
         :root {
-            /* Impeccable Style Palette: Industrial/Utilitarian Dark Mode */
-            --bg-base: #0c0d10;
-            --bg-surface: #14151a;
-            --text-primary: #e8e9ed;
-            --text-secondary: #8b8f9e;
-            --accent: #ff4400; /* Striking Vermillion */
-            --accent-hover: #ff6633;
+            /* Palette: Stark Contrast Space */
+            --bg: oklch(14% 0 0); /* Ultra dark gray, true to reality */
+            --bg-elevated: oklch(18% 0 0);
+            --fg: oklch(98% 0 0);
+            --fg-muted: oklch(75% 0 0);
+            --fg-dim: oklch(50% 0 0);
+            --accent: oklch(65% 0.25 30); /* Electric Orange/Red */
             
-            /* Fluid Typography via Clamp */
-            --step--1: clamp(0.83rem, calc(0.78rem + 0.23vw), 0.94rem);
-            --step-0: clamp(1.00rem, calc(0.91rem + 0.43vw), 1.25rem);
-            --step-1: clamp(1.20rem, calc(1.07rem + 0.63vw), 1.66rem);
-            --step-2: clamp(1.44rem, calc(1.26rem + 0.89vw), 2.21rem);
-            --step-3: clamp(1.73rem, calc(1.48rem + 1.24vw), 2.94rem);
-            --step-4: clamp(2.07rem, calc(1.73rem + 1.70vw), 3.92rem);
-            --step-5: clamp(2.49rem, calc(2.03rem + 2.31vw), 5.22rem);
-            --step-6: clamp(2.99rem, calc(2.37rem + 3.10vw), 6.95rem);
+            /* Typography */
+            --font-display: 'Outfit', -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+            
+            /* Fluid Spacing */
+            --space-3xs: clamp(0.25rem, 0.23rem + 0.11vw, 0.31rem);
+            --space-2xs: clamp(0.50rem, 0.46rem + 0.22vw, 0.63rem);
+            --space-xs: clamp(0.75rem, 0.68rem + 0.33vw, 0.94rem);
+            --space-s: clamp(1.00rem, 0.91rem + 0.43vw, 1.25rem);
+            --space-m: clamp(1.50rem, 1.36rem + 0.65vw, 1.88rem);
+            --space-l: clamp(2.00rem, 1.83rem + 0.87vw, 2.50rem);
+            --space-xl: clamp(3.00rem, 2.74rem + 1.30vw, 3.75rem);
+            --space-2xl: clamp(4.00rem, 3.65rem + 1.74vw, 5.00rem);
+            --space-3xl: clamp(6.00rem, 5.48rem + 2.61vw, 7.50rem);
 
-            /* Spatial Rhythm */
-            --space-3xs: clamp(0.25rem, calc(0.23rem + 0.11vw), 0.31rem);
-            --space-2xs: clamp(0.50rem, calc(0.45rem + 0.22vw), 0.63rem);
-            --space-xs: clamp(0.75rem, calc(0.68rem + 0.33vw), 0.94rem);
-            --space-s: clamp(1.00rem, calc(0.91rem + 0.43vw), 1.25rem);
-            --space-m: clamp(1.50rem, calc(1.36rem + 0.65vw), 1.88rem);
-            --space-l: clamp(2.00rem, calc(1.82rem + 0.87vw), 2.50rem);
-            --space-xl: clamp(3.00rem, calc(2.73rem + 1.30vw), 3.75rem);
-            --space-2xl: clamp(4.00rem, calc(3.64rem + 1.74vw), 5.00rem);
-            --space-3xl: clamp(6.00rem, calc(5.46rem + 2.61vw), 7.50rem);
+            /* Ease */
+            --ease-squish: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
@@ -47,306 +52,398 @@
         }
 
         body {
-            background-color: var(--bg-base);
-            color: var(--text-primary);
-            font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: var(--font-display);
+            font-size: clamp(1rem, 0.91rem + 0.43vw, 1.25rem);
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
             overflow-x: hidden;
+            selection: {
+                background: var(--accent);
+                color: var(--bg);
+            }
         }
 
         ::selection {
-            background-color: var(--accent);
-            color: var(--bg-base);
+            background: var(--accent);
+            color: var(--bg);
         }
 
-        /* Layout */
+        /* 
+         * Layout Primitives
+         */
         .container {
-            max-width: 1400px;
+            width: 100%;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: var(--space-xl) var(--space-m);
+            padding: 0 var(--space-m);
         }
 
-        /* Typography */
+        /* 
+         * Typography Overlap & Fluid Scaling
+         */
         h1, h2, h3 {
-            font-weight: 800;
-            line-height: 1.1;
-            letter-spacing: -0.02em;
+            font-weight: 900;
+            line-height: 1.05;
             text-wrap: balance;
+            letter-spacing: -0.02em;
         }
 
-        h1 {
-            font-size: var(--step-6);
-            margin-bottom: var(--space-s);
-            color: var(--text-primary);
-        }
-
-        h2 {
-            font-size: var(--step-4);
+        .headline {
+            font-size: clamp(4rem, 1.39rem + 13.04vw, 11.5rem);
             margin-bottom: var(--space-m);
+            text-transform: uppercase;
+        }
+
+        .sub-headline {
+            font-size: clamp(1.5rem, 1.15rem + 1.74vw, 2.5rem);
+            font-weight: 300;
+            color: var(--fg-muted);
+            max-width: 32ch;
+            margin-bottom: var(--space-2xl);
+            line-height: 1.3;
+        }
+
+        .section-title {
+            font-size: clamp(2.5rem, 1.98rem + 2.61vw, 4rem);
+            margin-bottom: var(--space-l);
+            color: var(--fg);
         }
 
         p {
-            font-size: var(--step-1);
-            color: var(--text-secondary);
-            font-weight: 300;
-            max-width: 65ch;
             margin-bottom: var(--space-m);
-            text-wrap: pretty;
+            max-width: 65ch;
+            color: var(--fg-muted);
         }
 
         .mono {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: var(--step--1);
+            font-family: var(--font-mono);
+            font-size: 0.85em;
             letter-spacing: -0.01em;
         }
 
-        /* Components */
-        header {
-            min-height: 90vh;
+        /* 
+         * Components
+         */
+        .nav {
+            padding: var(--space-m) 0;
             display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-            position: relative;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--bg-elevated);
         }
 
-        .label-badge {
+        .logo {
+            font-weight: 900;
+            font-size: 1.5rem;
+            letter-spacing: -0.05em;
+            text-decoration: none;
+            color: var(--fg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-3xs);
+        }
+        
+        .logo span {
+            color: var(--accent);
+        }
+
+        .badge {
             display: inline-flex;
             align-items: center;
             padding: var(--space-3xs) var(--space-2xs);
-            background: rgba(255, 68, 0, 0.1);
+            background: color-mix(in oklch, var(--accent) 15%, transparent);
             color: var(--accent);
-            border: 1px solid rgba(255, 68, 0, 0.3);
-            border-radius: 4px;
-            font-weight: 700;
+            border: 1px solid color-mix(in oklch, var(--accent) 30%, transparent);
             text-transform: uppercase;
+            font-size: 0.7rem;
+            font-weight: 700;
             letter-spacing: 0.05em;
             margin-bottom: var(--space-m);
+            border-radius: 2px;
         }
 
-        .btn-group {
+        .terminal-block {
+            background: var(--bg-elevated);
+            border: 1px solid color-mix(in oklch, var(--fg) 10%, transparent);
+            padding: var(--space-m);
             display: flex;
-            gap: var(--space-s);
-            margin-top: var(--space-l);
-            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            overflow-x: auto;
+            position: relative;
+            margin-bottom: var(--space-2xl);
+            border-radius: 2px;
+            box-shadow: 10px 10px 0px 0px var(--bg), 10px 10px 0px 1px color-mix(in oklch, var(--fg) 10%, transparent);
+            transition: transform 0.4s var(--ease-squish), box-shadow 0.4s var(--ease-squish);
+            width: fit-content;
+        }
+
+        .terminal-block:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 8px 8px 0px 0px var(--bg), 8px 8px 0px 1px color-mix(in oklch, var(--fg) 10%, transparent);
+        }
+
+        .terminal-prompt {
+            color: var(--accent);
+            margin-right: var(--space-xs);
+        }
+
+        .terminal-code {
+            color: var(--fg);
+            margin-right: var(--space-xl);
+            white-space: nowrap;
         }
 
         .btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            padding: var(--space-s) var(--space-l);
-            font-size: var(--step-0);
-            font-weight: 500;
+            padding: var(--space-s) var(--space-m);
+            font-weight: 700;
             text-decoration: none;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-            border: 2px solid transparent;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            transition: all 0.3s var(--ease-squish);
+            border-radius: 2px;
+            cursor: pointer;
+            border: none;
         }
 
         .btn-primary {
-            background-color: var(--accent);
-            color: var(--bg-base);
+            background: var(--fg);
+            color: var(--bg);
+            border: 1px solid var(--fg);
         }
 
         .btn-primary:hover {
-            background-color: var(--accent-hover);
-            transform: translateY(-2px);
+            background: transparent;
+            color: var(--fg);
         }
 
         .btn-secondary {
-            background-color: transparent;
-            color: var(--text-primary);
-            border-color: var(--text-secondary);
+            background: transparent;
+            color: var(--fg);
+            border: 1px solid color-mix(in oklch, var(--fg) 20%, transparent);
         }
 
         .btn-secondary:hover {
-            border-color: var(--text-primary);
-            color: var(--bg-base);
-            background-color: var(--text-primary);
-            transform: translateY(-2px);
+            border-color: var(--fg);
         }
 
-        .code-block {
-            background: var(--bg-surface);
-            border: 1px solid #2a2d36;
-            padding: var(--space-m) var(--space-l);
-            border-radius: 4px;
-            margin-top: var(--space-l);
-            display: inline-flex;
-            align-items: center;
-            gap: var(--space-m);
+        /* 
+         * Editorial Grid Section 
+         */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1px;
+            background: color-mix(in oklch, var(--fg) 15%, transparent);
+            border: 1px solid color-mix(in oklch, var(--fg) 15%, transparent);
+            margin-bottom: var(--space-3xl);
+        }
+
+        .feature-card {
+            background: var(--bg);
+            padding: var(--space-xl) var(--space-m);
             position: relative;
         }
 
-        .code-block::before {
-            content: "$";
-            color: var(--accent);
-            font-weight: bold;
-        }
-
-        .copy-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-
-        .copy-btn:hover {
-            color: var(--text-primary);
-        }
-
-        /* Abstract Grid Decoration */
-        .grid-bg {
+        /* Number marker */
+        .feature-card::before {
+            content: attr(data-index);
             position: absolute;
-            top: 0;
-            right: 0;
-            width: 50vw;
-            height: 100%;
-            background-image: 
-                linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
-            mask-image: linear-gradient(to left, black, transparent);
-            -webkit-mask-image: linear-gradient(to left, black, transparent);
-            z-index: -1;
-            pointer-events: none;
+            top: var(--space-m);
+            right: var(--space-m);
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--fg-dim);
         }
 
-        /* Features Section */
-        .features {
+        .feature-title {
+            font-size: clamp(1.25rem, 1.16rem + 0.43vw, 1.5rem);
+            margin-bottom: var(--space-s);
+            color: var(--fg);
+        }
+
+        /* 
+         * Structural 
+         */
+        .section {
             padding: var(--space-3xl) 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: var(--space-xl);
-            margin-top: var(--space-xl);
+        .hero {
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
-        .feature-item {
-            padding-left: var(--space-m);
-            border-left: 2px solid var(--text-secondary);
-            transition: border-color 0.4s ease;
+        .btn-group {
+            display: flex;
+            gap: var(--space-s);
+            flex-wrap: wrap;
         }
 
-        .feature-item:hover {
-            border-color: var(--accent);
-        }
-
-        .feature-item h3 {
-            font-size: var(--step-1);
-            color: var(--text-primary);
-            margin-bottom: var(--space-2xs);
-        }
-
-        .feature-item p {
-            font-size: var(--step-0);
-            margin-bottom: 0;
-        }
-
-        /* Footer */
         footer {
-            padding: var(--space-xl) 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            border-top: 1px solid var(--bg-elevated);
+            padding: var(--space-l) 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: var(--space-m);
+            font-size: 0.85rem;
+            color: var(--fg-dim);
         }
-
+        
         .footer-link {
-            color: var(--text-secondary);
+            color: var(--fg-muted);
             text-decoration: none;
-            transition: color 0.2s ease;
         }
 
         .footer-link:hover {
-            color: var(--text-primary);
+            color: var(--fg);
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 4px;
         }
 
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate {
-            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        /* 
+         * Animations (Staggered Load)
+         */
+        .reveal {
             opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s var(--ease-squish), transform 0.8s var(--ease-squish);
         }
         
-        .delay-1 { animation-delay: 0.1s; }
-        .delay-2 { animation-delay: 0.2s; }
-        .delay-3 { animation-delay: 0.3s; }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-        /* Media Queries */
+        .delay-1 { transition-delay: 0.1s; }
+        .delay-2 { transition-delay: 0.2s; }
+        .delay-3 { transition-delay: 0.3s; }
+
         @media (max-width: 768px) {
-            .grid-bg { display: none; }
-            .btn-group { flex-direction: column; width: 100%; }
-            .btn { width: 100%; }
-            .code-block { width: 100%; justify-content: space-between; font-size: 0.8rem; }
+            .terminal-block {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="grid-bg"></div>
-    <div class="container">
-        <header>
-            <div class="label-badge mono animate">v1.0 Open Source Release</div>
-            <h1 class="animate delay-1">The Glass-Box Study Pipeline.</h1>
-            <p class="animate delay-2">
-                ZenNode is an enterprise-grade AI study environment designed by and for neurodivergent learners. Convert sprawling lectures, fragmented notes, and chaotic thoughts into highly structured, un-overwhelming mastery sheets.
-            </p>
+
+    <nav class="nav">
+        <div class="container" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+            <a href="#" class="logo">ZEN<span>NODE</span></a>
+            <a href="https://github.com/parity-byte/zennode" class="btn btn-secondary mono" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;">[ View Source ]</a>
+        </div>
+    </nav>
+
+    <main>
+        <section class="section hero container">
+            <div class="reveal">
+                <div class="badge mono">v1.0.0 — Open Source Release</div>
+            </div>
             
-            <div class="code-block mono animate delay-3">
-                <span id="install-cmd">uv run zennode setup</span>
-                <button class="copy-btn" onclick="navigator.clipboard.writeText('uv run zennode setup')" aria-label="Copy command">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                </button>
-            </div>
+            <h1 class="headline reveal delay-1">Glass-Box<br>Pipeline.</h1>
+            
+            <p class="sub-headline reveal delay-2">
+                Enterprise-grade AI study environment. Turn raw lectures and chaotic thoughts into highly structured, un-overwhelming mastery sheets.
+            </p>
 
-            <div class="btn-group animate delay-3">
-                <a href="https://github.com/parity-byte/zennode" class="btn btn-primary">View on GitHub</a>
-                <a href="https://github.com/parity-byte/zennode/blob/main/README.md" class="btn btn-secondary">Read Documentation</a>
-            </div>
-        </header>
+            <div class="reveal delay-3">
+                <div class="terminal-block mono">
+                    <div>
+                        <span class="terminal-prompt">$</span>
+                        <span class="terminal-code">uv run zennode setup</span>
+                    </div>
+                </div>
 
-        <section class="features">
-            <h2>Architectural Principles</h2>
-            <div class="feature-grid">
-                <div class="feature-item">
-                    <h3>Zero Friction Ingestion</h3>
-                    <p>Native macOS Menubar app. Click to record global system audio or transcribe thoughts on the fly. No CLI wrestling required.</p>
-                </div>
-                <div class="feature-item">
-                    <h3>The Glass-Box Method</h3>
-                    <p>AI should synthesize, not hallucinate. Every concept is broken into first-principles definitions, mental models, and "junior pitfalls" designed specifically for ADHD cognitive patterns.</p>
-                </div>
-                <div class="feature-item">
-                    <h3>Obsidian Integration</h3>
-                    <p>Writes directly to your Obsidian vault. Leverages the Zettelkasten method by atomically appending new mastery nodes to your personal knowledge base.</p>
-                </div>
-                <div class="feature-item">
-                    <h3>Enterprise Durability</h3>
-                    <p>Built on LangGraph with SqliteSaver checkpointing. Features LLM fallback routing, structured Pydantic validation, and comprehensive automated prompt testing (Promptfoo).</p>
+                <div class="btn-group">
+                    <a href="#philosophy" class="btn btn-primary">The Philosophy</a>
+                    <a href="https://github.com/parity-byte/zennode" class="btn btn-secondary">Read the Docs</a>
                 </div>
             </div>
         </section>
 
-        <footer>
-            <div class="mono">
-                &copy; <script>document.write(new Date().getFullYear())</script> ZenNode Open Source
+        <section id="philosophy" class="section container">
+            <h2 class="section-title reveal">Why Glass-Box?</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--space-2xl);">
+                <div class="reveal delay-1">
+                    <h3 class="feature-title">The "Black Box" Problem</h3>
+                    <p>Current generation AI tools treat learners like endpoints. You put a prompt in, and an opaque "Black Box" spits an answer out. If the AI hallucinates, you learn wrong. If it's too brief, you miss nuance. You are left afraid to trust the code, unable to defend it in an interview, and overwhelmed.</p>
+                </div>
+                <div class="reveal delay-2">
+                    <h3 class="feature-title">The "Glass Box" Solution</h3>
+                    <p>ZenNode explicitly breaks the AI workflow apart. Instead of hiding the work, it exposes the exact engineering logic. It teaches you what you <strong>MUST</strong> understand deeply vs what you can safely ignore as a black box. Perfect for ADHD minds that need high-signal architecture over unstructured walls of text.</p>
+                </div>
             </div>
-            <div style="display:flex;gap:var(--space-m);">
-                <a href="https://www.linkedin.com/in/parth-ag" class="footer-link mono">Creator: Parth Agrawal</a>
-                <a href="https://github.com/parity-byte/zennode" class="footer-link mono">Repository</a>
+        </section>
+
+        <section class="section container">
+            <h2 class="section-title reveal">Core Capabilities.</h2>
+            
+            <div class="features-grid reveal delay-1">
+                <div class="feature-card" data-index="01">
+                    <h3 class="feature-title">Agentic Workflow Chains</h3>
+                    <p>Powered by LangGraph, routing queries through discrete modules: Ingestion → Chunking → Embed → Generate over iterative loops.</p>
+                </div>
+                
+                <div class="feature-card" data-index="02">
+                    <h3 class="feature-title">Mastery Sheet Generation</h3>
+                    <p>Outputs brutally clean, highly aggressive markdown matrices, C4 architecture diagrams, and "Junior Pitfalls" summaries.</p>
+                </div>
+                
+                <div class="feature-card" data-index="03">
+                    <h3 class="feature-title">Promptfoo Red-Teaming</h3>
+                    <p>Every system prompt in ZenNode is hardened through adversarial LLM testing to ensure exact compliance with cognitive learning constraints.</p>
+                </div>
+
+                <div class="feature-card" data-index="04">
+                    <h3 class="feature-title">AuDHD Optimized Profiles</h3>
+                    <p>Specialized system prompt architectures that cater specifically to non-linear neurodivergent thinking with zero motivational fluff.</p>
+                </div>
             </div>
-        </footer>
-    </div>
+        </section>
+    </main>
+
+    <footer class="container">
+        <div>&copy; 2026 ZenNode — The Glass-Box Study Pipeline.</div>
+        <div>
+            Built by <a href="https://github.com/parity-byte" class="footer-link">Parth Agrawal</a>
+        </div>
+    </footer>
+
+    <!-- Staggered Layout Reveal Logic -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, {
+                root: null,
+                threshold: 0.1,
+                rootMargin: "0px"
+            });
+
+            document.querySelectorAll('.reveal').forEach((el) => {
+                observer.observe(el);
+            });
+            
+            // Trigger immediately for elements above the fold
+            setTimeout(() => {
+                document.querySelectorAll('.hero .reveal').forEach((el) => {
+                    el.classList.add('active');
+                });
+            }, 100);
+        });
+    </script>
 </body>
 </html>

@@ -1,5 +1,5 @@
 [project]
-name = "enterprise-study-env"
+name = "zennode"
 version = "0.1.0"
 description = "AuDHD Enterprise Study Pipeline"
 readme = "README.md"
@@ -28,7 +28,7 @@ dependencies = [
 ]
 
 [project.scripts]
-audhd-pipeline = "zennode.cli.main:app"
+zennode = "zennode.cli.main:app"
 
 [dependency-groups]
 dev = [
