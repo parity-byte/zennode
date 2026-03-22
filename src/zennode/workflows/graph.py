@@ -14,6 +14,8 @@ from zennode.workflows.nodes import (
     quiz_generation_node,
     reality_check_node,
     transcribe_node,
+    transcription_cleanup_node,
+    context_precheck_node,
 )
 
 logger = structlog.get_logger(__name__)
@@ -120,6 +122,8 @@ def build_graph() -> Any:
     # Add Nodes
     builder.add_node("ingest", ingest_node)
     builder.add_node("transcribe", transcribe_node)
+    builder.add_node("transcription_cleanup", transcription_cleanup_node)
+    builder.add_node("context_precheck", context_precheck_node)
     builder.add_node("accuracy_check", reality_check_node)
     builder.add_node("synthesize_mastery", mastery_synthesis_node)
     builder.add_node("generate_quizzes", quiz_generation_node)
@@ -129,7 +133,9 @@ def build_graph() -> Any:
     # Add Edges
     builder.add_edge(START, "ingest")
     builder.add_edge("ingest", "transcribe")
-    builder.add_edge("transcribe", "accuracy_check")
+    builder.add_edge("transcribe", "transcription_cleanup")
+    builder.add_edge("transcription_cleanup", "context_precheck")
+    builder.add_edge("context_precheck", "accuracy_check")
     builder.add_edge("accuracy_check", "synthesize_mastery")
     builder.add_edge("synthesize_mastery", "generate_quizzes")
     builder.add_edge("generate_quizzes", "audit_critique")

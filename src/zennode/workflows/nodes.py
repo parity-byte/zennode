@@ -8,12 +8,14 @@ from zennode.core.models import (
     QuizQuestionModel,
     RealityCheckModel,
     StudyState,
+    ContextIntegrityModel,
 )
 from zennode.infrastructure.audio import GroqWhisperService
 from zennode.infrastructure.llm import (
     GeminiSynthesizerService,
     GroqSynthesizerService,
     OpenRouterVisionService,
+    LLMRouter,
 )
 from zennode.infrastructure.obsidian import ObsidianConnector
 from zennode.prompts.system_prompts import (
@@ -21,7 +23,9 @@ from zennode.prompts.system_prompts import (
     MASTERY_SYNTHESIS_PROMPT,
     QUIZ_GENERATION_PROMPT,
     REALITY_CHECK_PROMPT,
+    CONTEXT_PRECHECK_PROMPT,
 )
+from zennode.infrastructure.pii import PIIMasker
 
 logger = structlog.get_logger(__name__)
 
@@ -45,9 +49,12 @@ def ingest_node(state: StudyState, config: RunnableConfig) -> dict[str, Any]:
         if os.path.exists(img_path):
             raw_images.append(img_path)
                 
-        # Support audio
+        # Support audio (V2 Optimization: compressed m4a files)
         wav_path = os.path.join(dump_dir, "audio.wav")
-        if os.path.exists(wav_path):
+        m4a_path = os.path.join(dump_dir, "audio.m4a")
+        if os.path.exists(m4a_path):
+            audio_path = m4a_path
+        elif os.path.exists(wav_path):
             audio_path = wav_path
             
         return {
@@ -88,7 +95,131 @@ def transcribe_node(state: StudyState, config: RunnableConfig) -> dict[str, Any]
     logger.info("transcribe_node_started")
     whisper_service = GroqWhisperService()
     transcription = whisper_service.transcribe(audio_path)
-    return {"transcription": transcription}
+    
+    # ADVANCED RED-TEAM FIX: Mask PII before LLM agent sees it
+    masked_transcription = PIIMasker.mask(transcription)
+    
+    return {"transcription": masked_transcription}
+
+def transcription_cleanup_node(state: StudyState, config: RunnableConfig) -> dict[str, Any]:
+    """
+    GLASS BOX — The ASR Correction Layer.
+
+    Problem being solved:
+        Groq Whisper is a phonetic model. When you say "RAG" or "LangChain" while
+        whispering, stressed, or with background noise, it mishears sound-alikes:
+          "RAG"       -> "WAG", "rag", "rack"
+          "LangChain" -> "Landra", "lane chain"
+          "Pydantic"  -> "pie dantic", "Py-dan-tick"
+
+    This is NOT about fixing your conceptual understanding of RAG.
+    That is Reality Check's job.
+
+    What this node does:
+        1. Takes the raw Whisper transcript.
+        2. Gives the LLM the raw clipboard text (which usually has correct spelling since
+           it was typed/pasted) as a domain vocabulary reference.
+        3. Asks the LLM to ONLY fix phonetic ASR errors — never alter meaning.
+        4. Returns a clean transcript. The Reality Check downstream will judge
+           whether your understanding of RAG was actually correct.
+
+    Black Box boundary:
+        The LLM call itself is a black box. You don't control the correction model.
+        What you MUST understand: the prompt hard-constrains the LLM to ONLY fix
+        transcription artifacts, not re-interpret user statements.
+
+    When to skip:
+        If no audio was provided (transcription == standard fallback string), skip cleanup.
+    """
+    transcription = state.get("transcription", "")
+    
+    # Skip if transcription is just the fallback (no audio was recorded)
+    if not transcription or "No audio explanation provided" in transcription or "Audio recording failed" in transcription:
+        logger.info("transcription_cleanup_skipped", reason="no_real_transcription")
+        return {}
+
+    # Use clipboard context as the domain vocabulary oracle
+    # E.g. if user pasted "RAG pipeline using LangChain", the LLM will know "WAG" is wrong
+    context_anchor = state.get("raw_text_context", "").strip()
+    
+    logger.info("transcription_cleanup_started")
+
+    try:
+        llm = LLMRouter.get_primary_synthesizer()
+        
+        cleanup_prompt = f"""You are a SURGICAL Automatic Speech Recognition (ASR) error corrector.
+
+Your ONLY job is to fix phonetic transcription errors (mishearings) in the voice transcript.
+
+**CONTEXT ANCHOR** (typed/pasted text with correctly-spelled domain terms):
+```
+{context_anchor[:1500] if context_anchor else "No text context available."}
+```
+
+**RAW WHISPER TRANSCRIPT** (may contain ASR mishearings):
+```
+{transcription}
+```
+
+**RULES — READ THESE CAREFULLY:**
+1. ONLY fix words that are clearly a phonetic ASR error (sound-alikes). 
+   - Examples: "WAG" → "RAG", "landra" → "LangChain", "pie dantic" → "Pydantic"
+2. DO NOT change the user's meaning, arguments, or conceptual statements. 
+   - If the user said "RAG is like a WAG but better" that's their idea — leave it.
+3. DO NOT add words the user didn't say.
+4. DO NOT remove words the user said.
+5. If the transcript uses a term differently from the context anchor, LEAVE IT — that's
+   a conceptual difference for a downstream accuracy checker, not your concern.
+6. If you are unsure whether a word is an ASR error or an intentional neologism, LEAVE IT.
+7. Return ONLY the corrected transcript text. No preamble, no explanation, no quotes.
+
+**CORRECTED TRANSCRIPT:**"""
+
+        response = llm.invoke(cleanup_prompt)
+        cleaned = response.content.strip() if hasattr(response, 'content') else str(response).strip()
+        
+        if cleaned:
+            logger.info("transcription_cleanup_complete", original_length=len(transcription), cleaned_length=len(cleaned))
+            return {"transcription": cleaned}
+        else:
+            logger.warning("transcription_cleanup_empty_response")
+            return {}
+            
+    except Exception as e:
+        # Non-fatal — if cleanup fails, just use the original Whisper output
+        logger.warning("transcription_cleanup_failed", error=str(e))
+        return {}
+
+def context_precheck_node(state: StudyState, config: RunnableConfig) -> dict[str, Any]:
+    """Evaluates if the transcription semantically aligns with the context, preventing hallucinations."""
+    
+    # If the user is just taking a pure voice note without any pasted text, 
+    # there is no baseline text context to check against. Auto-approve to allow voice & image only workflows.
+    raw_text = state.get('raw_text_context', '').strip()
+    # Check if text is extremely short (e.g. just the # Brain Dump header)
+    if len(raw_text) < 150:
+        logger.info("context_precheck_skipped_due_to_empty_context")
+        return {"context_integrity": ContextIntegrityModel(has_context=True, rejection_reason="No text context provided")}
+        
+    logger.info("context_precheck_node_started")
+    prompt = CONTEXT_PRECHECK_PROMPT.format(
+        raw_text_context=state['raw_text_context'],
+        transcription=state['transcription']
+    )
+    
+    primary_synthesizer = LLMRouter.get_primary_synthesizer()
+    result = primary_synthesizer.generate_structured_output(
+        prompt=prompt, 
+        images=[], 
+        output_schema=ContextIntegrityModel
+    )
+    
+    # System Halt if the assessment fails
+    if not result.has_context:
+        logger.error("adversarial_or_hallucinated_context_detected", reason=result.rejection_reason)
+        raise ValueError(f"Context Shield Activated: {result.rejection_reason}")
+        
+    return {"context_integrity": result}
 
 def reality_check_node(state: StudyState, config: RunnableConfig) -> dict[str, Any]:
     """Cross-examines the user's transcription against GenAI first-principles."""
@@ -120,16 +251,16 @@ def mastery_synthesis_node(state: StudyState, config: RunnableConfig) -> dict[st
     )
     
     try:
-        groq_service = GroqSynthesizerService(model_name="llama-3.3-70b-versatile")
-        result = groq_service.generate_structured_output(
+        primary_synthesizer = LLMRouter.get_primary_synthesizer()
+        result = primary_synthesizer.generate_structured_output(
             prompt=prompt, 
             images=[], 
             output_schema=MasterySheetModel
         )
     except Exception as e:
-        logger.warning("groq_mastery_failed_falling_back_to_gemini", error=str(e))
-        gemini_service = GeminiSynthesizerService()
-        result = gemini_service.generate_structured_output(
+        logger.warning("primary_mastery_failed_falling_back", error=str(e))
+        fallback_synthesizer = LLMRouter.get_fallback_synthesizer()
+        result = fallback_synthesizer.generate_structured_output(
             prompt=prompt, 
             images=[], 
             output_schema=MasterySheetModel
@@ -152,16 +283,16 @@ def quiz_generation_node(state: StudyState, config: RunnableConfig) -> dict[str,
     prompt = QUIZ_GENERATION_PROMPT.format(topic=topic)
     
     try:
-        groq_service = GroqSynthesizerService(model_name="llama-3.3-70b-versatile")
-        result = groq_service.generate_structured_output(
+        primary_synthesizer = LLMRouter.get_primary_synthesizer()
+        result = primary_synthesizer.generate_structured_output(
             prompt=prompt, 
             images=[], 
             output_schema=QuizList
         )
     except Exception as e:
-        logger.warning("groq_quiz_failed_falling_back_to_gemini", error=str(e))
-        gemini_service = GeminiSynthesizerService()
-        result = gemini_service.generate_structured_output(
+        logger.warning("primary_quiz_failed_falling_back", error=str(e))
+        fallback_synthesizer = LLMRouter.get_fallback_synthesizer()
+        result = fallback_synthesizer.generate_structured_output(
             prompt=prompt, 
             images=[], 
             output_schema=QuizList
@@ -186,16 +317,16 @@ def audit_critique_node(state: StudyState, config: RunnableConfig) -> dict[str, 
     )
     
     try:
-        groq_service = GroqSynthesizerService(model_name="llama-3.3-70b-versatile")
-        result = groq_service.generate_structured_output(
+        primary_synthesizer = LLMRouter.get_primary_synthesizer()
+        result = primary_synthesizer.generate_structured_output(
             prompt=prompt, 
             images=[], 
             output_schema=MasterySheetModel
         )
     except Exception as e:
-        logger.warning("groq_audit_failed_falling_back_to_gemini", error=str(e))
-        gemini_service = GeminiSynthesizerService()
-        result = gemini_service.generate_structured_output(
+        logger.warning("primary_audit_failed_falling_back", error=str(e))
+        fallback_synthesizer = LLMRouter.get_fallback_synthesizer()
+        result = fallback_synthesizer.generate_structured_output(
             prompt=prompt, 
             images=[], 
             output_schema=MasterySheetModel
